@@ -15,3 +15,5 @@
 # vendor/
 *.crt
 *.key
+
+configs/config.yaml

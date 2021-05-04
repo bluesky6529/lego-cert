@@ -1,6 +1,8 @@
-package main
+package dnspod
 
 import (
+	_ "cert/configs"
+
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -16,6 +18,7 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/providers/dns/dnspod"
 	"github.com/go-acme/lego/v4/registration"
+	"github.com/spf13/viper"
 )
 
 // You'll need a user or account type that implements acme.User
@@ -35,7 +38,7 @@ func (u *MyUser) GetPrivateKey() crypto.PrivateKey {
 	return u.key
 }
 
-func main() {
+func Dnspod_cert(account string, domain_name string) {
 
 	// Create a user. New accounts need an email and private key to start.
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -44,14 +47,14 @@ func main() {
 	}
 
 	myUser := MyUser{
-		Email: "******************",
+		Email: viper.GetString("user_email"),
 		key:   privateKey,
 	}
 
 	config := lego.NewConfig(&myUser)
 
 	// This CA URL is configured for a local dev instance of Boulder running in Docker in a VM.
-	config.CADirURL = "https://acme-staging-v02.api.letsencrypt.org/directory"
+	config.CADirURL = viper.GetString("letsencrypt_url")
 	config.Certificate.KeyType = certcrypto.RSA2048
 
 	// A client facilitates communication with the CA server.
@@ -67,7 +70,7 @@ func main() {
 
 	// Config is used to configure the creation of the DNSProvider.
 	dnspodconfig := dnspod.Config{
-		LoginToken:         "*****************",
+		LoginToken:         viper.GetString("DNSPOD." + account + ".key"),
 		TTL:                600,
 		PropagationTimeout: dns01.DefaultPropagationTimeout,
 		PollingInterval:    dns01.DefaultPollingInterval,
@@ -88,7 +91,7 @@ func main() {
 	myUser.Registration = reg
 
 	request := certificate.ObtainRequest{
-		Domains: []string{"**************"},
+		Domains: []string{domain_name, "*." + domain_name},
 		Bundle:  true,
 	}
 
