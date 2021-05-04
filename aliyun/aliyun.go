@@ -103,11 +103,16 @@ func Aliyun_cert(account string, domain_name string) {
 	// private key, and a certificate URL. SAVE THESE TO DISK.
 	fmt.Printf("%#v\n", certificates)
 
-	f, _ := os.Create("./" + request.Domains[0] + ".key")
+	err = os.MkdirAll("./cert/"+request.Domains[0], os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	f, _ := os.Create("./cert/" + request.Domains[0] + "/" + request.Domains[0] + ".key")
 	f.Write(certificates.PrivateKey)
 	f.Close()
 
-	f1, _ := os.Create("./" + request.Domains[0] + ".crt")
+	f1, _ := os.Create("./cert/" + request.Domains[0] + "/" + request.Domains[0] + ".crt")
 	f1.Write(certificates.Certificate)
 	f1.Close()
 	// ... all done.
